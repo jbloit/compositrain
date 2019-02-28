@@ -210,6 +210,7 @@ Synth(\reverb_ef, [\in, ~bus, \out, 0, \revTime, 1.8]);
 
 
 (
+TempoClock.tempo = 50/60;
 
 ~scale = Scale.chromatic;
 ~claves  = [
@@ -232,15 +233,106 @@ Pdef(\bell,
 	Pbind(
 		\instrument, \bell,
 		\dur, 1/8,
-		\degree, Pseq( [1, 4,  8], inf),
+		\degree, Pseq( [1, 5,  8], inf),
 		\octave, 4,
 		\scale, ~scale,
-		\t60, 1,
+		\t60, 0.9,
 		\pitchy, 3,
-		\amp, 0.1,
-		\out, ~bus,
+		\amp, 0.07,
+		\out, 0 ,
 )).play(quant:1);
 
+)
+
+
+///////////////////////////////// BELL PATTERNS
+
+
+/////// 1
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, 1,
+		\degree, Pseq( [1], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+)).play(quant:1);
+)
+
+
+/////// 2
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, 1/2,
+		\degree, Pseq( [1, 5,  8, 13 ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+)).play(quant:1);
+)
+
+
+////// 3
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, 1/4,
+		\degree, Pseq( [[1, 5,  8], [1,  8, 13] ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+)).play(quant:1);
+)
+
+////// 4
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq([ 1]/8, inf),
+		\degree, Pseq( [[1, 5,  8], 1, [1,  8, 13], 8 ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 2,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+)).play(quant:1);
+)
+
+
+
+Pdef(\bell).stop;
+
+
+//////// + TARD
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq([1]/8, inf),
+		\degree, Pseq( [[1, 5,  8], [1,  8, 12] ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 2,
+		\amp, 0.07 * Pseq((1..8)/8, inf),
+		\out, 0 ,
+)).play(quant:1);
 )
 
 
@@ -248,34 +340,131 @@ Pdef(\bell,
 Pdef(\bell,
 	Pbind(
 		\instrument, \bell,
-		\dur, 1/4,
-		\degree, Pseq( [1, 4,  8], inf),
+		\dur, 1/2,
+		\degree, Pseq( [[1, 5,  8]], inf),
 		\octave, 4,
 		\scale, ~scale,
 		\t60, 1,
 		\pitchy, 3,
-		\amp, 0.1,
-		\out, ~bus,
+		\amp, 0.08,
+		\out, 0,
 )).play(quant:1);
 )
 
 
 (
-Pdef(\vox,
-	PmonoArtic(\sillyVoice,
-		\dur, 1/4,
-		\legato, 0.99,
-		\degree, Pseq( [1, 4,  4], inf),
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq(~claves[5]/8, inf),
+		\degree, Pseq( [[1, 5,  8], 1], inf),
 		\octave, 4,
 		\scale, ~scale,
+		\t60, 1,
+		\pitchy, 3,
+		\amp, 0.1,
+		\out, 0,
+)).play(quant:1);
+)
+(
+Pdef(\bell,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq(~claves[9]/8, inf),
+		\degree, Pseq( [[1, 5,  8], 1], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 1,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0,
+)).play(quant:1);
+)
+
+///////////////////////////////// VOX + FLUTE PATTERNS
+
+
+/////// 1
+(
+Pdef(\vox,
+	PmonoArtic(\sillyVoice,
+		\dur, Pseq([1/2, Rest(1/2)], inf),
+		\degree, Pseq( [1], inf),
+		\octave, 4,
+		\scale, ~scale,
+
+		\legato, 0.99,
+
 		\vowel, Pseq([3,4], inf),
 		\vibratoDepth, Prand((1..2), inf),
 		\amp, 1,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 
 )
 
+
+/////// 2
+(
+Pdef(\vox,
+	PmonoArtic(\sillyVoice,
+		\dur, 1/2,
+		\degree, Pseq( [1, 5,  8, 13 ], inf),
+		\octave, 4,
+		\scale, ~scale,
+
+		\legato, 0.99,
+
+		\vowel, Pseq([3,4], inf),
+		\vibratoDepth, Prand((1..2), inf),
+		\amp, 1,
+		\out, 0,
+)).play(quant:1);
+
+)
+
+
+/////// 3
+(
+Pdef(\vox,
+	Pbind(\instrument, \sillyVoice,
+		\dur, 1/4,
+		\degree, Pseq( [[1, 5,  8], [1,  8, 13] ], inf),
+		\octave, 4,
+		\scale, ~scale,
+
+		\legato, 0.99,
+
+		\vowel, Pseq([3,4], inf),
+		\vibratoDepth, Prand((1..2), inf),
+		\amp, 1,
+		\out, 0,
+)).play(quant:1);
+
+)
+
+
+/////// 4
+(
+Pdef(\vox,
+	Pbind(\instrument, \sillyVoice,
+		\dur, Pseq([ 1]/8, inf),
+		\degree, Pseq( [[1, 5,  8], 1, [1,  8, 13], 8 ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\legato, 0.99,
+		\vowel, Pseq([2], inf),
+		\vibratoDepth, Prand((1..2), inf),
+		\amp, 1,
+		\out, 0,
+)).play(quant:1);
+
+)
+
+
+Pdef(\vox).stop;
+
+///////////// +TARD
 
 (
 Pdef(\vox,
@@ -288,7 +477,7 @@ Pdef(\vox,
 		\vowel, Pseq([3,4], inf),
 		\vibratoDepth, Prand((1..2), inf),
 		\amp, 3,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
@@ -304,7 +493,7 @@ Pdef(\vox,
 		\vowel, Pseq([3,4], inf),
 		\vibratoDepth, Prand((1..2), inf),
 		\amp, 4,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
@@ -320,7 +509,7 @@ Pdef(\vox,
 		\vowel, Pseq([1,3], inf),
 		\vibratoDepth, Prand((1..2), inf),
 		\amp, 4,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
@@ -335,10 +524,27 @@ Pdef(\vox,
 		\vowel, Pseq([1,3], inf),
 		\vibratoDepth, Prand((1..4), inf),
 		\amp, 4,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
+
+(
+Pdef(\vox,
+	Pbind(\instrument, \sillyVoice,
+		\dur, Pseq([1/2, 1/8, Rest(1/2)],inf),
+		\legato, 1,
+		\degree, Pseq( [[1, 5, 8], 1], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\vowel, Pseq([[4,1], [1]], inf),
+		\vibratoDepth, Prand((1..4), inf),
+		\amp, 4,
+		\out, 0,
+)).play(quant:1);
+)
+
+Pdef(\vox).stop
 
 (
 Pdef(\flute,
@@ -348,7 +554,7 @@ Pdef(\flute,
 		\octave, 4,
 		\scale, ~scale,
 		\amp, 0.2,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
@@ -360,7 +566,7 @@ Pdef(\flute,
 		\octave, 4,
 		\scale, ~scale,
 		\amp, 0.2,
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
@@ -372,59 +578,18 @@ Pdef(\flute,
 		\octave, 4,
 		\scale, ~scale,
 		\amp, Pseq((1..8)/20, inf),
-		\out, ~bus,
+		\out, 0,
 )).play(quant:1);
 )
 
+Pdef(\flute).stop;
 
 
-(
-Pdef(\bell,
-	Pbind(
-		\instrument, \bell,
-		\dur, 1/2,
-		\degree, Pseq( [[1, 5,  8]], inf),
-		\octave, 4,
-		\scale, ~scale,
-		\t60, 1,
-		\pitchy, 3,
-		\amp, 0.08,
-		\out, ~bus,
-)).play(quant:1);
-)
+
+//////////////////////////////// PERC
 
 
-(
-Pdef(\bell,
-	Pbind(
-		\instrument, \bell,
-		\dur, Pseq(~claves[5]/6, inf),
-		\degree, Pseq( [[1, 5,  8], 1], inf),
-		\octave, 4,
-		\scale, ~scale,
-		\t60, 1,
-		\pitchy, 3,
-		\amp, 0.1,
-		\out, ~bus,
-)).play(quant:1);
-)
-
-(
-Pdef(\bell,
-	Pbind(
-		\instrument, \bell,
-		\dur, Pseq(~claves[9]/8, inf),
-		\degree, Pseq( [[1, 4,  8], 1], inf),
-		\octave, 4,
-		\scale, ~scale,
-		\t60, 1,
-		\pitchy, 3,
-		\amp, 0.05,
-		\out, ~bus,
-)).play(quant:1);
-)
-
-
+///////////// 1
 (
 Pdef(\drums,
 	Ppar([
@@ -433,23 +598,116 @@ Pdef(\drums,
 			\dur, Pseq([Rest(1/4), 1/4], inf),
 			\ffreq, 9000,
 			\rel, 0.1,
-			\amp, 0.2
+			\amp, 0.4,
 		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\freq, Pseq([70], inf).midicps
+		);
+])).play(quant:1);
+)
+
+
+///////////// 2
+(
+Pdef(\drums,
+	Ppar([
 		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\ffreq, 9000,
+			\rel, 0.1,
+			\amp, 0.4,
+		),
+			Pbind(
 			\instrument, "kick",
-			\dur, 1/2,
-			\amp, 0.9,
+			\dur, Pseq([1/4, Rest(3/4)],inf),
+			\amp, 1,
 			\rel, 0.12,
 			\glissf, 0.99
 		),
 		Pbind(
 			\instrument, "snare",
-			\dur, Pseq([Rest(1/2), 1/2], inf),
+			\dur, Pseq([Rest(1/2)], inf),
 			\amp, 0.25,
 			\rel, 0.1
-		)
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\freq, Pseq([70], inf).midicps
+		);
 ])).play(quant:1);
 )
+
+///////////// 3
+(
+Pdef(\drums,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\ffreq, 9000,
+			\rel, 0.1,
+			\amp, 0.4,
+		),
+			Pbind(
+			\instrument, "kick",
+			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
+			\amp, 1,
+			\rel, 0.12,
+			\glissf, 0.99
+		),
+		Pbind(
+			\instrument, "snare",
+			\dur, Pseq([Rest(1), 2], inf),
+			\amp, 0.3,
+			\rel, 0.1
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\freq, Pseq([80, 70], inf).midicps,
+		);
+])).play(quant:1);
+)
+
+
+
+///////////// 4
+(
+Pdef(\drums,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([1/8], inf),
+			\ffreq, Pseq([11000, 9000, 8000],inf),
+			\rel, 0.1,
+			\amp, Pseq([0.5, 0.3],inf),
+		),
+			Pbind(
+			\instrument, "kick",
+			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
+			\amp, 1,
+			\rel, 0.12,
+			\glissf, 0.99
+		),
+		Pbind(
+			\instrument, "snare",
+			\dur, Pseq([1/2], inf),
+			\amp, 0.25,
+			\rel, 0.1
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([1/4, 1/8], inf),
+			\freq, Pseq([70, 80, 90], inf).midicps,
+		);
+])).play(quant:1);
+)
+
+Pdef(\drums).stop
 
 (
 Pdef(\drums,
@@ -459,12 +717,12 @@ Pdef(\drums,
 			\dur, Pseq([Rest(1/4), 1/4], inf),
 			\ffreq, 9000,
 			\rel, 0.1,
-			\amp, 0.2
+			\amp, 0.5
 		),
 		Pbind(
 			\instrument, "kick",
 			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
-			\amp, 0.9,
+			\amp, 1,
 			\rel, 0.12,
 			\glissf, 0.99
 		),
@@ -477,26 +735,23 @@ Pdef(\drums,
 ])).play(quant:1);
 )
 
-
-
+Pdef(\bell).stop
 Pdef(\drums).stop;
 
 
-
 (
-Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.2,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80], inf).midicps)).play(quant:1);
-
+Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.3,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80], inf).midicps)).play(quant:1);
 )
 
 (
-Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.2,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80, 90], inf).midicps)).play(quant:1);
+Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.3,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80, 90], inf).midicps)).play(quant:1);
 
 )
 
 
 
 ~postOSC  = false;
-~tempoFactor = 0.5;
+~tempoFactor = 1;
 
 TempoClock.tempo = ~tempoFactor;
 
