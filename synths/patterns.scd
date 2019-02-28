@@ -42,7 +42,6 @@ SynthDef(\bell, {
 		],
 		exciter,
 		freqscale:freq*pitchy);
-
 	bass = EnvGen.ar(Env.perc(0.001, 0.5), gate) * LFPar.ar(freq) ;
 	sig = (sig + (bass / 1) ) * amp;
 
@@ -738,13 +737,6 @@ Pdef(\drums,
 Pdef(\bell).stop
 Pdef(\drums).stop;
 
-
-(
-Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.3,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80], inf).midicps)).play(quant:1);
-)
-
-(
-Pdef(\wind, Pbind(\instrument, \wind, \amp, 0.3,\dur, Pseq([1/4, 1/8], inf), \freq, Pseq([70, 80, 90], inf).midicps)).play(quant:1);
 
 )
 
