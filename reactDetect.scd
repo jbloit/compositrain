@@ -1,4 +1,5 @@
-/*Detect reactivision fiducial symbols and map the detected grid to a
+/*
+Detect reactivision fiducial symbols and map the detected grid to a
 sequence of indices the the sequencer can read from.
 */
 
@@ -26,7 +27,7 @@ OSCdef(\vision, {
 	// make the previous one available to the sequencer.
 	if (msg[1].asString == "alive", {
 		~seq = ~tmpSeq;
-		~seq.postln;
+		// ~seq.postln;
 		~tmpSeq= (-1!~slotCount);
 	});
 

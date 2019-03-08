@@ -132,62 +132,89 @@ Pdef(\bell_4,
 
 )
 
-~seq = ([1, 2 , 3 , 4, 3, 2]);
-~seq = ([1, 1 , 1 , 1, 1, 1]);
+
+Pdef(\silent,
+	Pbind(
+		\dur, Pseq([1],1),
+		\amp, 0,
+)).play;
+
+// caution: use each key only once
+~patterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\bell_1, 1,
+	\bell_2, 2,
+	\bell_3, 3,
+	\bell_4, 4,
+]);
+~patterns.findKeyForValue(2)
+
+
+
 (
 
-
+~prev = 0;
 t = Task({
 
+	var step = 0;
 
 	///////
 	"step 1".postln;
-	Pdef((\bell_++~seq[0]).asSymbol).play(quant:0);
-	~prev = ~seq[0];
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
+	step = 1;
 	"step 2".postln;
-	Pdef((\bell_++~seq[1]).asSymbol).play(quant:0);
-	~prev = ~seq[1];
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+
 
 	///////
+	step = 2;
 	"step 3".postln;
-	Pdef((\bell_++~seq[2]).asSymbol).play(quant:0);
-	~prev = ~seq[2];
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
-	Pdef((\bell_++~seq[3]).asSymbol).play(quant:0);
-	~prev = ~seq[3];
+	step = 3;
+	"step 4".postln;
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
+	step = 4;
 	"step 5".postln;
-	Pdef((\bell_++~seq[4]).asSymbol).play(quant:0);
-	~prev = ~seq[4];
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
+	step = 5;
 	"step 6".postln;
-	Pdef((\bell_++~seq[5]).asSymbol).play(quant:0);
-	~prev = ~seq[5];
+	~seq.postln;
+	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
+	~prev = ~seq[step];
 	~beatPerSlot.wait;
-	Pdef((\bell_++~prev).asSymbol).stop;
+	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	"END".postln;
 });
 )
-
-
-~seq = ([1, 2 , 3 , 4, 3, 2]);
-~seq = ([1, 1 , 1 , 1, 1, 1]);
 
 t.start;
 t.pause;
