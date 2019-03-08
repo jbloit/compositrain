@@ -1,3 +1,5 @@
+s.latency=0.05
+s.reboot
 (
 SynthDef(\bell, {
 	|freq=1, t60=1, pitchy=1, amp=0.25, gate=1, out=0|
@@ -57,7 +59,10 @@ SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01
 }).add;
 
 
-TempoClock.tempo = 50/60;
+~bpm  = 90;
+TempoClock.tempo = ~bpm/60;
+~beatPerSlot = 4;
+
 
 ~scale = Scale.chromatic;
 )
@@ -94,22 +99,95 @@ Pdef(\bell_2,
 		\out, 0 ,
 ));
 
+////// 3
+
+Pdef(\bell_3,
+	Pbind(
+		\instrument, \bell,
+		\dur, 1/4,
+		\degree, Pseq( [[1, 5,  8], [1,  8, 13] ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+));
+
+
+////// 4
+
+Pdef(\bell_4,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq([ 1]/8, inf),
+		\degree, Pseq( [[1, 5,  8], 1, [1,  8, 13], 8 ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 2,
+		\pitchy, 3,
+		\amp, 0.07,
+		\out, 0 ,
+));
+
 )
 
-
+~seq = ([1, 2 , 3 , 4, 3, 2]);
+~seq = ([1, 1 , 1 , 1, 1, 1]);
 (
-i = 2;
+
+
 t = Task({
-	Pdef(\bell_1).play;
-	4.wait;
-	Pdef(\bell_1).stop;
-	Pdef((\bell_++i).asSymbol).play;
-	4.wait;
-	Pdef(\bell_++i).stop;
+
+
+	///////
+	"step 1".postln;
+	Pdef((\bell_++~seq[0]).asSymbol).play(quant:0);
+	~prev = ~seq[0];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	///////
+	"step 2".postln;
+	Pdef((\bell_++~seq[1]).asSymbol).play(quant:0);
+	~prev = ~seq[1];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	///////
+	"step 3".postln;
+	Pdef((\bell_++~seq[2]).asSymbol).play(quant:0);
+	~prev = ~seq[2];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	///////
+	Pdef((\bell_++~seq[3]).asSymbol).play(quant:0);
+	~prev = ~seq[3];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	///////
+	"step 5".postln;
+	Pdef((\bell_++~seq[4]).asSymbol).play(quant:0);
+	~prev = ~seq[4];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	///////
+	"step 6".postln;
+	Pdef((\bell_++~seq[5]).asSymbol).play(quant:0);
+	~prev = ~seq[5];
+	~beatPerSlot.wait;
+	Pdef((\bell_++~prev).asSymbol).stop;
+
+	"END".postln;
 });
 )
 
-i = 1
+
+~seq = ([1, 2 , 3 , 4, 3, 2]);
+~seq = ([1, 1 , 1 , 1, 1, 1]);
 
 t.start;
 t.pause;
