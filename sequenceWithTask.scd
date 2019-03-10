@@ -130,14 +130,16 @@ Pdef(\bell_4,
 		\out, 0 ,
 ));
 
-)
+
 
 
 Pdef(\silent,
 	Pbind(
 		\dur, Pseq([1],1),
 		\amp, 0,
-)).play;
+));
+
+
 
 // caution: use each key only once
 ~patterns= Dictionary.newFrom(List[
@@ -147,8 +149,7 @@ Pdef(\silent,
 	\bell_3, 3,
 	\bell_4, 4,
 ]);
-~patterns.findKeyForValue(2)
-
+)
 
 
 (
@@ -215,6 +216,7 @@ t = Task({
 	"END".postln;
 });
 )
+
 
 t.start;
 t.pause;

@@ -21,7 +21,7 @@ OSCdef(\vision, {
 
 	var sessionID, classID, posX, posY;
 
-	// msg.postln;
+//	msg.postln;
 
 	// The alive message is sent periodically. We reset the sequence and
 	// make the previous one available to the sequencer.
