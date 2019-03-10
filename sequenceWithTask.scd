@@ -1,6 +1,41 @@
 s.latency=0.05
 s.reboot
 (
+
+// Parse OSC from reactivision, and update the sequence to play.
+OSCdef(\vision).free;
+OSCdef(\vision, {
+	| msg, time, addr, port |
+
+	var sessionID, classID, posX, posY;
+
+	//	msg.postln;
+
+	// The alive message is sent periodically. We reset the sequence and
+	// make the previous one available to the sequencer.
+	if (msg[1].asString == "alive", {
+		~seq = ~tmpSeq;
+		// ~seq.postln;
+		~tmpSeq= (-1!~slotCount);
+	});
+
+	// all "set" messages are received in between successive "alive" messages.
+	// we build the sequence
+	if (msg[1].asString == "set", {
+		var index;
+		classID = msg[3];
+		posX = msg[4];
+		posY = msg[5];
+
+		index =(posX.linlin(0, 1, 0, ~slotCount).ceil - 1);
+		~tmpSeq[index] = classID;
+	});
+
+
+}, '/tuio/2Dobj');
+
+
+//////////////////////////////// SYNTHS
 SynthDef(\bell, {
 	|freq=1, t60=1, pitchy=1, amp=0.25, gate=1, out=0|
 	var sig, exciter, bass, env;
@@ -59,16 +94,16 @@ SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01
 }).add;
 
 
+
+/////////////////// GLOBAL MUSIC PARAMETERS
 ~bpm  = 90;
 TempoClock.tempo = ~bpm/60;
 ~beatPerSlot = 4;
-
-
 ~scale = Scale.chromatic;
-)
 
-(
 
+
+/////////////////// PATTERNS FOR EACH STEP
 Pdef(\bell_1,
 	Pbind(
 		\instrument, \bell,
@@ -149,11 +184,10 @@ Pdef(\silent,
 	\bell_3, 3,
 	\bell_4, 4,
 ]);
-)
 
 
-(
 
+//////////////////////////// SEQUENCER
 ~prev = 0;
 t = Task({
 
