@@ -1,7 +1,14 @@
 s.latency=0.05
 s.reboot
 (
+// The number of slots in the sequence
+~slotCount = 6;
 
+// The sequence to build. "-1" means no fiducial at the slot.
+//~seq = (-1!~slotCount);
+~seq = [1,2,3,4,3,2];
+// a local version of the sequence
+~tmpSeq = (-1!~slotCount);
 // Parse OSC from reactivision, and update the sequence to play.
 OSCdef(\vision).free;
 OSCdef(\vision, {
@@ -9,7 +16,7 @@ OSCdef(\vision, {
 
 	var sessionID, classID, posX, posY;
 
-	//	msg.postln;
+	// msg.postln;
 
 	// The alive message is sent periodically. We reset the sequence and
 	// make the previous one available to the sequencer.
@@ -96,7 +103,11 @@ SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01
 
 
 /////////////////// GLOBAL MUSIC PARAMETERS
-~bpm  = 90;
+
+~trackDuration = 20; // measured in seconds
+~beatPerSlot = 4;
+~beatDuration = ~trackDuration / (~slotCount * ~beatPerSlot); // in seconds
+~bpm  = 60 / ~beatDuration;
 TempoClock.tempo = ~bpm/60;
 ~beatPerSlot = 4;
 ~scale = Scale.chromatic;
@@ -249,8 +260,16 @@ t = Task({
 
 	"END".postln;
 });
-)
 
+MIDIClient.init;
+MIDIIn.connectAll;
+MIDIdef.noteOn(\test4, {arg ...args;
+	args.postln;
+
+	t.start;
+}); // match any noteOn
+
+)
 
 t.start;
 t.pause;
