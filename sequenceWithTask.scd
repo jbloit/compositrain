@@ -1,12 +1,32 @@
 s.latency=0.05
 s.reboot
+
+
+t.start
+
 (
 // The number of slots in the sequence
 ~slotCount = 6;
 
-// The sequence to build. "-1" means no fiducial at the slot.
+// The sequences to build. "-1" means no fiducial at the slot.
 //~harmoSeq = (-1!~slotCount);
-~harmoSeq = [1,2,3,4,3,2];
+
+// test seq
+~harmoSeq = [1,2,2,3,2,1];
+~leadSeq = [11,12,-1,14,12,13];
+~percSeq = [21,22,23,21,22,22];
+
+// test seq
+~harmoSeq = [-1,5,5,3,2,1];
+~leadSeq = [11,12,-1,14,12,13];
+~percSeq = [-1,22,23,21,22,22];
+
+// test seq
+~harmoSeq = [-1,5,-1,3,-1,5];
+~leadSeq = [-1,14,-1,11,12,-1];
+~percSeq = [22,-1,24,-1,22,-1];
+
+
 // a local version of the sequence
 ~tmpSeq = (-1!~slotCount);
 // Parse OSC from reactivision, and update the sequence to play.
@@ -58,7 +78,7 @@ SynthDef(\bell, {
 		exciter,
 		freqscale:freq*pitchy);
 	bass = EnvGen.ar(Env.perc(0.001, 0.5), gate) * LFPar.ar(freq) ;
-	sig = (sig + (bass / 1) ) * amp;
+	sig = (sig + (bass / 1) ) * amp * 0.5;
 
 	DetectSilence.ar(sig, 0.001, 0.5, doneAction:2);
 	Out.ar(out, sig!2);
@@ -94,15 +114,15 @@ SynthDef("snare", {arg out = 0, amp = 0.1, sinfreq = 180, att = 0.01, rel = 0.2,
 
 SynthDef(\kick, {
 	|out=0, amp=0.4|
-    var snd;
-    snd = DC.ar(0);
-    snd = snd + (SinOsc.ar(XLine.ar(1500, 800, 0.01)) * Env.perc(0.0005, 0.01, curve: \lin).ar);
-    snd = snd + (BPF.ar(Impulse.ar(0) * SampleRate.ir / 48000, 6100, 1.0) * 3.dbamp);
-    snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), 300, 0.9) * Env.perc(0.001, 0.02).ar);
-    snd = snd + (SinOsc.ar(XLine.ar(472, 60, 0.045)) * Env.perc(0.0001, 0.3, curve: \lin).delay(0.005).ar(2));
+	var snd;
+	snd = DC.ar(0);
+	snd = snd + (SinOsc.ar(XLine.ar(1500, 800, 0.01)) * Env.perc(0.0005, 0.01, curve: \lin).ar);
+	snd = snd + (BPF.ar(Impulse.ar(0) * SampleRate.ir / 48000, 6100, 1.0) * 3.dbamp);
+	snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), 300, 0.9) * Env.perc(0.001, 0.02).ar);
+	snd = snd + (SinOsc.ar(XLine.ar(472, 60, 0.045)) * Env.perc(0.0001, 0.3, curve: \lin).delay(0.005).ar(2));
 	snd = snd * amp;
-    snd = snd.tanh;
-    Out.ar(out, Pan2.ar(snd, 0));
+	snd = snd.tanh * 0.2;
+	Out.ar(out, Pan2.ar(snd, 0));
 }).add;
 
 
@@ -140,7 +160,7 @@ SynthDef(\rhodes, {
 	snd = snd * EnvGen.ar(Env.asr(0, 1, 0.1), gate, doneAction: 2);
 	snd = Pan2.ar(snd, pan, amp);
 
-	Out.ar(out, snd);
+	Out.ar(out, snd*0.3);
 }).add;
 
 
@@ -158,7 +178,9 @@ TempoClock.tempo = ~bpm/60;
 
 
 /////////////////// PATTERNS FOR EACH STEP
-Pdef(\bell_1,
+
+/////// HARMONY LAYER
+Pdef(\harmo_1,
 	Pbind(
 		\instrument, \bell,
 		\dur, 1,
@@ -175,7 +197,7 @@ Pdef(\bell_1,
 
 /////// 2
 
-Pdef(\bell_2,
+Pdef(\harmo_2,
 	Pbind(
 		\instrument, \bell,
 		\dur, 1/2,
@@ -190,7 +212,7 @@ Pdef(\bell_2,
 
 ////// 3
 
-Pdef(\bell_3,
+Pdef(\harmo_3,
 	Pbind(
 		\instrument, \bell,
 		\dur, 1/4,
@@ -206,7 +228,7 @@ Pdef(\bell_3,
 
 ////// 4
 
-Pdef(\bell_4,
+Pdef(\harmo_4,
 	Pbind(
 		\instrument, \bell,
 		\dur, Pseq([ 1]/8, inf),
@@ -219,6 +241,219 @@ Pdef(\bell_4,
 		\out, 0 ,
 ));
 
+Pdef(\harmo_5,
+	Pbind(
+		\instrument, \bell,
+		\dur, Pseq([1]/8, inf),
+		\degree, Pseq( [[1, 5,  8], [1,  8, 13] ], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\t60, 0.9,
+		\pitchy, 2,
+		\amp, 0.07 * Pseq((1..8)/8, inf),
+		\out, 0 ,
+));
+
+
+
+////////////////////////////// LEAD LAYER
+
+///////////////// 1
+
+Pdef(\lead_1,
+	Pbind(\instrument, \rhodes,
+		\dur, 1,
+		\degree, Pseq( [5, 3], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+));
+
+
+
+///////////////// 2
+
+Pdef(\lead_2,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/2, 1/4], inf),
+		\degree, Pseq( [5, 3, 5, 8], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+));
+
+
+///////////////// 3
+
+Pdef(\lead_3,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq( [1/4, 1/4, 1/4, 1/4, 1]  , inf),
+		\degree, Pseq( [1, 5, 8, 1, 1], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([0.9, 0.9, 0.7, 1], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+));
+
+
+///////////////// 4
+
+Pdef(\lead_4,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/4, 1/2, 1/4], inf),
+		\degree, Pseq( [10, 5, 3], inf),
+		\octave, Pseq( [[3, 4,5]], inf),
+		\legato, Pseq([1, 0.4, 0.2], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+));
+
+///////////////// 5
+
+Pdef(\lead_5,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/4, 1/4, 1/4, 5/4], inf),
+		\degree, Pseq( [10, 8, 10, 13], inf),
+		\octave, Pseq( [[3,4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+));
+
+////////////////////////////// PERC LAYER
+
+Pdef(\perc_1,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([1], inf),
+			\ffreq, 9000,
+			\rel, 0.1,
+			\amp, 0.4,
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.01,
+			\dur, Pseq([1/2], inf),
+			\freq, Pseq([70], inf).midicps
+		);
+]));
+
+///////////// 2
+
+Pdef(\perc_2,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\ffreq, 9000,
+			\rel, 0.1,
+			\amp, 0.4,
+		),
+		Pbind(
+			\instrument, "kick",
+			\dur, Pseq([1/4, Rest(3/4)],inf),
+			\amp, 1,
+			\rel, 0.12,
+			\glissf, 0.99
+		),
+		Pbind(
+			\instrument, "snare",
+			\dur, Pseq([Rest(1/2)], inf),
+			\amp, 0.25,
+			\rel, 0.1
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\freq, Pseq([70], inf).midicps
+		);
+]));
+
+///////////// 3
+
+Pdef(\perc_3,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\ffreq, 9000,
+			\rel, 0.1,
+			\amp, 0.4,
+		),
+		Pbind(
+			\instrument, "kick",
+			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
+			\amp, 1,
+			\rel, 0.12,
+			\glissf, 0.99
+		),
+		Pbind(
+			\instrument, "snare",
+			\dur, Pseq([Rest(1), 2], inf),
+			\amp, 0.3,
+			\rel, 0.1
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([Rest(1/4), 1/4], inf),
+			\freq, Pseq([80, 70], inf).midicps,
+		);
+]));
+
+
+///////////// 4
+
+Pdef(\perc_4,
+	Ppar([
+		Pbind(
+			\instrument, "hat",
+			\dur, Pseq([1/8], inf),
+			\ffreq, Pseq([11000, 9000, 8000],inf),
+			\rel, 0.1,
+			\amp, Pseq([0.5, 0.3],inf),
+		),
+		Pbind(
+			\instrument, "kick",
+			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
+			\amp, 1,
+			\rel, 0.12,
+			\glissf, 0.99
+		),
+		Pbind(
+			\instrument, "snare",
+			\dur, Pseq([1/2], inf),
+			\amp, 0.25,
+			\rel, 0.1
+		),
+		Pbind(\instrument, \wind,
+			\amp, 0.3,
+			\dur, Pseq([1/4, 1/8], inf),
+			\freq, Pseq([70, 80, 90], inf).midicps,
+		);
+]));
+
 
 
 
@@ -229,20 +464,39 @@ Pdef(\silent,
 ));
 
 
-
-// caution: use each key only once
+// map patterns to fiducial indices
+// caution: use each key only once per dict
 ~harmoPatterns= Dictionary.newFrom(List[
 	\silent, -1,
-	\bell_1, 1,
-	\bell_2, 2,
-	\bell_3, 3,
-	\bell_4, 4,
+	\harmo_1, 1,
+	\harmo_2, 2,
+	\harmo_3, 3,
+	\harmo_4, 4,
+	\harmo_5, 5,
+]);
+~leadPatterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\lead_1, 11,
+	\lead_2, 12,
+	\lead_3, 13,
+	\lead_4, 14,
+	\lead_5, 15,
+]);
+~percPatterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\perc_1, 21,
+	\perc_2, 22,
+	\perc_3, 23,
+	\perc_4, 24,
 ]);
 
 
 
 //////////////////////////// SEQUENCER
-~prev = 0;
+~harmoPrev = 0;
+~leadPrev = 0;
+~percPrev = 0;
+
 t = Task({
 
 	var step = 0;
@@ -251,55 +505,103 @@ t = Task({
 	"step 1".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
+
 	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
 
 	///////
 	step = 1;
 	"step 2".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
-	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
 
+	~beatPerSlot.wait;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
 
 	///////
 	step = 2;
 	"step 3".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
+
 	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
 
 	///////
 	step = 3;
 	"step 4".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
+
 	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
+
 
 	///////
 	step = 4;
 	"step 5".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
+
 	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
 
 	///////
 	step = 5;
 	"step 6".postln;
 	~harmoSeq.postln;
 	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-	~prev = ~harmoSeq[step];
+	~harmoPrev = ~harmoSeq[step];
+	Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+	~leadPrev = ~leadSeq[step];
+	Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+	~percPrev = ~percSeq[step];
+
 	~beatPerSlot.wait;
-	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
+
+	Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+	Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+	Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
 
 	"END".postln;
 });
