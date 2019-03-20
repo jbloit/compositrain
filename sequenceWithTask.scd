@@ -5,11 +5,15 @@ s.reboot
 ~slotCount = 6;
 
 // The sequence to build. "-1" means no fiducial at the slot.
-//~seq = (-1!~slotCount);
-~seq = [1,2,3,4,3,2];
+~seq = (-1!~slotCount);
+// ~seq = [1,2,3,4,3,2];
 // a local version of the sequence
 ~tmpSeq = (-1!~slotCount);
-// Parse OSC from reactivision, and update the sequence to play.
+
+~laptopSlots = [0, 1, 2];
+~rpiSlots = [3, 4, 5];
+
+// Parse OSC from reactivision on laptop and update the sequence to play.
 OSCdef(\vision).free;
 OSCdef(\vision, {
 	| msg, time, addr, port |
@@ -38,8 +42,41 @@ OSCdef(\vision, {
 		~tmpSeq[index] = classID;
 	});
 
-
 }, '/tuio/2Dobj');
+
+
+// parse messages from raspberry pi
+OSCdef(\visionRPI).free;
+OSCdef(\visionRPI, {
+	| msg, time, addr, port |
+
+	var sessionID, classID, posX, posY;
+
+	msg.postln;
+
+	// The alive message is sent periodically. We reset the sequence and
+	// make the previous one available to the sequencer.
+	if (msg[1].asString == "alive", {
+		~seq = ~tmpSeq;
+		// ~seq.postln;
+		~tmpSeq= (-1!~slotCount);
+	});
+
+	// all "set" messages are received in between successive "alive" messages.
+	// we build the sequence
+	if (msg[1].asString == "set", {
+		var index;
+		classID = msg[3];
+		posX = msg[4];
+		posY = msg[5];
+
+		index =(posX.linlin(0, 1, 0, ~slotCount).ceil - 1);
+		~tmpSeq[index] = classID;
+	});
+
+}, '/tuio/2Dobj', recvPort:12345);
+
+
 
 
 //////////////////////////////// SYNTHS
