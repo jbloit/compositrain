@@ -5,8 +5,8 @@ s.reboot
 ~slotCount = 6;
 
 // The sequence to build. "-1" means no fiducial at the slot.
-//~seq = (-1!~slotCount);
-~seq = [1,2,3,4,3,2];
+//~harmoSeq = (-1!~slotCount);
+~harmoSeq = [1,2,3,4,3,2];
 // a local version of the sequence
 ~tmpSeq = (-1!~slotCount);
 // Parse OSC from reactivision, and update the sequence to play.
@@ -21,8 +21,8 @@ OSCdef(\vision, {
 	// The alive message is sent periodically. We reset the sequence and
 	// make the previous one available to the sequencer.
 	if (msg[1].asString == "alive", {
-		~seq = ~tmpSeq;
-		// ~seq.postln;
+		~harmoSeq = ~tmpSeq;
+		// ~harmoSeq.postln;
 		~tmpSeq= (-1!~slotCount);
 	});
 
@@ -92,12 +92,55 @@ SynthDef("snare", {arg out = 0, amp = 0.1, sinfreq = 180, att = 0.01, rel = 0.2,
 	Out.ar(out, Pan2.ar(sum, pan));
 }).add;
 
-SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01, rel = 0.45, pan = 0;
-	var gliss = XLine.kr(sinfreq, sinfreq*glissf, rel);
-	var snd = SinOsc.ar(gliss);
-	var env = EnvGen.kr(Env.perc(att, rel), doneAction: 2);
-	snd = snd * env * amp;
-	Out.ar(out, Pan2.ar(snd, pan));
+SynthDef(\kick, {
+	|out=0, amp=0.4|
+    var snd;
+    snd = DC.ar(0);
+    snd = snd + (SinOsc.ar(XLine.ar(1500, 800, 0.01)) * Env.perc(0.0005, 0.01, curve: \lin).ar);
+    snd = snd + (BPF.ar(Impulse.ar(0) * SampleRate.ir / 48000, 6100, 1.0) * 3.dbamp);
+    snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), 300, 0.9) * Env.perc(0.001, 0.02).ar);
+    snd = snd + (SinOsc.ar(XLine.ar(472, 60, 0.045)) * Env.perc(0.0001, 0.3, curve: \lin).delay(0.005).ar(2));
+	snd = snd * amp;
+    snd = snd.tanh;
+    Out.ar(out, Pan2.ar(snd, 0));
+}).add;
+
+
+/*Synth(\kick, [amp: 0.9]);*/
+
+
+// from https://sccode.org/1-522
+SynthDef(\rhodes, {
+	|
+	// standard meanings
+	out = 0, freq = 440, gate = 1, pan = 0, amp = 0.1,
+	// all of these range from 0 to 1
+	vel = 0.8, modIndex = 0.2, mix = 0.2, lfoSpeed = 0.4, lfoDepth = 0.0
+	|
+	var env1, env2, env3, env4;
+	var osc1, osc2, osc3, osc4, snd;
+
+	lfoSpeed = lfoSpeed * 12;
+
+	freq = freq * 2;
+
+	env1 = EnvGen.ar(Env.adsr(0.001, 1.25, 0.0, 0.04, curve: \lin));
+	env2 = EnvGen.ar(Env.adsr(0.001, 1.00, 0.0, 0.04, curve: \lin));
+	env3 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.0, 0.04, curve: \lin));
+	env4 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.0, 0.04, curve: \lin));
+
+	osc4 = SinOsc.ar(freq * 0.5) * 2pi * 2 * 0.535887 * modIndex * env4 * vel;
+	osc3 = SinOsc.ar(freq, osc4) * env3 * vel;
+	osc2 = SinOsc.ar(freq * 15) * 2pi * 0.108819 * env2 * vel;
+	osc1 = SinOsc.ar(freq, osc2) * env1 * vel;
+	snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
+	snd = snd * (SinOsc.ar(lfoSpeed) * lfoDepth + 1);
+
+	// using the doneAction: 2 on the other envs can create clicks (bc of the linear curve maybe?)
+	snd = snd * EnvGen.ar(Env.asr(0, 1, 0.1), gate, doneAction: 2);
+	snd = Pan2.ar(snd, pan, amp);
+
+	Out.ar(out, snd);
 }).add;
 
 
@@ -188,7 +231,7 @@ Pdef(\silent,
 
 
 // caution: use each key only once
-~patterns= Dictionary.newFrom(List[
+~harmoPatterns= Dictionary.newFrom(List[
 	\silent, -1,
 	\bell_1, 1,
 	\bell_2, 2,
@@ -206,57 +249,57 @@ t = Task({
 
 	///////
 	"step 1".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
 	step = 1;
 	"step 2".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 
 	///////
 	step = 2;
 	"step 3".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
 	step = 3;
 	"step 4".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
 	step = 4;
 	"step 5".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	///////
 	step = 5;
 	"step 6".postln;
-	~seq.postln;
-	Pdef(~patterns.findKeyForValue(~seq[step])).play(quant:0);
-	~prev = ~seq[step];
+	~harmoSeq.postln;
+	Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+	~prev = ~harmoSeq[step];
 	~beatPerSlot.wait;
-	Pdef((~patterns.findKeyForValue(~prev)).asSymbol).stop;
+	Pdef((~harmoPatterns.findKeyForValue(~prev)).asSymbol).stop;
 
 	"END".postln;
 });
