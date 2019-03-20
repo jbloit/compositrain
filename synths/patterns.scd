@@ -1,3 +1,4 @@
+
 (
 ~bus = Bus.audio(s,2);
 
@@ -190,12 +191,56 @@ SynthDef("snare", {arg out = 0, amp = 0.1, sinfreq = 180, att = 0.01, rel = 0.2,
 	Out.ar(out, Pan2.ar(sum, pan));
 }).add;
 
-SynthDef("kick", {arg out = 0, amp = 0.3, sinfreq = 60, glissf = 0.9, att = 0.01, rel = 0.45, pan = 0;
-	var gliss = XLine.kr(sinfreq, sinfreq*glissf, rel);
-	var snd = SinOsc.ar(gliss);
-	var env = EnvGen.kr(Env.perc(att, rel), doneAction: 2);
-	snd = snd * env * amp;
-	Out.ar(out, Pan2.ar(snd, pan));
+
+SynthDef(\kick, {
+	|out=0, amp=0.4|
+    var snd;
+    snd = DC.ar(0);
+    snd = snd + (SinOsc.ar(XLine.ar(1500, 800, 0.01)) * Env.perc(0.0005, 0.01, curve: \lin).ar);
+    snd = snd + (BPF.ar(Impulse.ar(0) * SampleRate.ir / 48000, 6100, 1.0) * 3.dbamp);
+    snd = snd + (BPF.ar(Hasher.ar(Sweep.ar), 300, 0.9) * Env.perc(0.001, 0.02).ar);
+    snd = snd + (SinOsc.ar(XLine.ar(472, 60, 0.045)) * Env.perc(0.0001, 0.3, curve: \lin).delay(0.005).ar(2));
+	snd = snd * amp;
+    snd = snd.tanh;
+    Out.ar(out, Pan2.ar(snd, 0));
+}).add;
+
+
+/*Synth(\kick, [amp: 0.9]);*/
+
+
+// from https://sccode.org/1-522
+SynthDef(\rhodes, {
+	|
+	// standard meanings
+	out = 0, freq = 440, gate = 1, pan = 0, amp = 0.1,
+	// all of these range from 0 to 1
+	vel = 0.8, modIndex = 0.2, mix = 0.2, lfoSpeed = 0.4, lfoDepth = 0.0
+	|
+	var env1, env2, env3, env4;
+	var osc1, osc2, osc3, osc4, snd;
+
+	lfoSpeed = lfoSpeed * 12;
+
+	freq = freq * 2;
+
+	env1 = EnvGen.ar(Env.adsr(0.001, 1.25, 0.0, 0.04, curve: \lin));
+	env2 = EnvGen.ar(Env.adsr(0.001, 1.00, 0.0, 0.04, curve: \lin));
+	env3 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.0, 0.04, curve: \lin));
+	env4 = EnvGen.ar(Env.adsr(0.001, 1.50, 0.0, 0.04, curve: \lin));
+
+	osc4 = SinOsc.ar(freq * 0.5) * 2pi * 2 * 0.535887 * modIndex * env4 * vel;
+	osc3 = SinOsc.ar(freq, osc4) * env3 * vel;
+	osc2 = SinOsc.ar(freq * 15) * 2pi * 0.108819 * env2 * vel;
+	osc1 = SinOsc.ar(freq, osc2) * env1 * vel;
+	snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
+	snd = snd * (SinOsc.ar(lfoSpeed) * lfoDepth + 1);
+
+	// using the doneAction: 2 on the other envs can create clicks (bc of the linear curve maybe?)
+	snd = snd * EnvGen.ar(Env.asr(0, 1, 0.1), gate, doneAction: 2);
+	snd = Pan2.ar(snd, pan, amp);
+
+	Out.ar(out, snd);
 }).add;
 
 
@@ -585,6 +630,140 @@ Pdef(\flute).stop;
 
 
 
+(
+Pdef(\flute,
+	Pbind(\instrument, \flute,
+		\dur, 1/2,
+		\degree, Pseq( [[1, 8], 1], inf),
+		\octave, 4,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+(
+Pdef(\flute,
+	Pbind(\instrument, \flute,
+		\dur, 1/8,
+		\degree, Pseq( (1..8), inf),
+		\octave, 4,
+		\scale, ~scale,
+		\amp, Pseq((1..8)/20, inf),
+		\out, 0,
+)).play(quant:1);
+)
+
+Pdef(\flute).stop;
+///////////////////////////////// RHODES
+
+
+///////////////// 1
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/2], inf),
+		\degree, Pseq( [5, 3], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+///////////////// 2
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/2, 1/4], inf),
+		\degree, Pseq( [5, 3, 5, 8], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+///////////////// 3
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \rhodes,
+		\dur, 1,
+		\degree, Pseq( [1, 5, 8, 1], inf),
+		\octave, Pseq( [[4,5]], inf),
+		\legato, Pseq([1, 1, 0.7, 1], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+
+///////////////// 4
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/4, 1/2, 1/4], inf),
+		\degree, Pseq( [10, 5, 3], inf),
+		\octave, Pseq( [[3, 4,5]], inf),
+		\legato, Pseq([1, 0.4, 0.2], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+
+///////////////// 5
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \rhodes,
+		\dur, Pseq([1/4, 1/4, 1/4, 5/4], inf),
+		\degree, Pseq( [10, 8, 10, 13], inf),
+		\octave, Pseq( [[3,4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0.1,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+
+///////////////// 5
+(
+Pdef(\rhodes,
+	Pbind(\instrument, \sine,
+		\dur, Pseq([1/4, 1/4, 1/4, 5/4], inf),
+		\degree, Pseq( [10, 8, 10, 13], inf),
+		\octave, Pseq( [[3,4,5]], inf),
+		\legato, Pseq([1, 0.4], inf),
+		\modIndex, 0,
+		\lfoSpeed, 0.25,
+		\lfoDepth, 0.1,
+		\scale, ~scale,
+		\amp, 0.2,
+		\out, 0,
+)).play(quant:1);
+)
+
+
 //////////////////////////////// PERC
 
 
@@ -619,7 +798,7 @@ Pdef(\drums,
 			\rel, 0.1,
 			\amp, 0.4,
 		),
-			Pbind(
+		Pbind(
 			\instrument, "kick",
 			\dur, Pseq([1/4, Rest(3/4)],inf),
 			\amp, 1,
@@ -651,7 +830,7 @@ Pdef(\drums,
 			\rel, 0.1,
 			\amp, 0.4,
 		),
-			Pbind(
+		Pbind(
 			\instrument, "kick",
 			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
 			\amp, 1,
@@ -685,7 +864,7 @@ Pdef(\drums,
 			\rel, 0.1,
 			\amp, Pseq([0.5, 0.3],inf),
 		),
-			Pbind(
+		Pbind(
 			\instrument, "kick",
 			\dur, Pseq([1/8, 1/4, 1/8, 1],inf),
 			\amp, 1,
