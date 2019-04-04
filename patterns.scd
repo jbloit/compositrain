@@ -774,6 +774,8 @@ Pdef(\perc,
 )
 Pdef(\perc).stop;
 
+
+//////////// 2
 (
 Pdef(\perc,
 	Ppar([
@@ -824,7 +826,9 @@ Pdef(\perc,
 		),
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
+//////////// 3
 (
 Pdef(\perc,
 	Ppar([
@@ -875,7 +879,10 @@ Pdef(\perc,
 		),
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
+
+////////// 4
 (
 Pdef(\perc,
 	Ppar([
@@ -927,7 +934,7 @@ Pdef(\perc,
 ])).play(quant:1);
 )
 
-
+//////////////// 5
 (
 Pdef(\perc,
 	Ppar([
@@ -971,7 +978,9 @@ Pdef(\perc,
 		)
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
+/////////////// 6
 (
 Pdef(\perc,
 	Ppar([
@@ -1015,7 +1024,10 @@ Pdef(\perc,
 		)
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
+
+////////////7
 (
 Pdef(\perc,
 	Ppar([
@@ -1072,8 +1084,9 @@ Pdef(\perc,
 		)
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
-
+//////////////8
 (
 Pdef(\perc,
 	Ppar([
@@ -1130,8 +1143,9 @@ Pdef(\perc,
 		)
 ])).play(quant:1);
 )
+Pdef(\perc).stop;
 
-
+//////////// 9
 (
 Pdef(\perc,
 	Ppar([
