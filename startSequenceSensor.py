@@ -19,11 +19,9 @@ def buttonEvent(channel):
 GPIO.add_event_detect(INPUT_PIN, GPIO.BOTH, callback=buttonEvent)
 
     
-"""
 while(True):
     if GPIO.input(INPUT_PIN) == GPIO.HIGH:
         print("PUSHED")
+
+"""message = input("press any key to quit")
 """
-
-message = input("press any key to quit")
-
