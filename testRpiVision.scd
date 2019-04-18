@@ -1,4 +1,5 @@
 OSCdef(\rpiVision, {|msg, time, addr, port|
+	"________________________________".postln;
 
 	msg.postln;
 
