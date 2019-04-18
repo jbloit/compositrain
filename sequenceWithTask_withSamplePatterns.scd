@@ -57,6 +57,17 @@ s.waitForBoot({
 	}, '/tuio/2Dobj');
 
 
+
+	OSCdef(\rpiSensor, {|msg, time, addr, port|
+
+		msg.postln;
+
+		t.start;
+
+	}, '/start', recvPort:12346);
+
+
+
 	//////////////////////////////// SYNTHS
 
 
@@ -961,8 +972,6 @@ s.waitForBoot({
 		"END".postln;
 	});
 
-
-	t.start;
 
 });
 
