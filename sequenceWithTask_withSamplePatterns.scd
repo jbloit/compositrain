@@ -37,9 +37,9 @@ s.waitForBoot({
 	~percSeq = (-1!~slotCount);
 
 	// test seq
-	~harmoSeq = [7,9,1,2,3,3];
-	~leadSeq = [-1,1,5,6,7,7];
-	~percSeq = [-1,9,10,11,8,-1];
+	// ~harmoSeq = [0,1,1,2,3,3];
+	// ~leadSeq = [-1,4,5,6,7,7];
+	// ~percSeq = [-1,9,10,11,8,-1];
 
 
 	// since the two cameras' fields might overlap, we define each camera's allocated region
@@ -85,10 +85,12 @@ s.waitForBoot({
 	// OSC data from rpi camera
 	OSCdef(\rpiVision).free;
 	OSCdef(\rpiVision, {|msg, time, addr, port|
-		//	"________________________________".postln;
-		//		msg.postln;
 
 		var sessionID, classID, posX, posY;
+
+		"________________________________".postln;
+		msg.postln;
+
 
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
@@ -115,6 +117,8 @@ s.waitForBoot({
 			// ~slotCountPi slots stack along the X axis
 			var trackIndex, slotIndex;
 
+			// "--- Set rpi".postln;
+
 			classID = msg[3]; // this is the detected fiducial index
 			posX = msg[4];
 			posY = msg[5];
@@ -122,10 +126,14 @@ s.waitForBoot({
 			trackIndex = (posY.linlin(~piYmin, ~piYmax, 0, ~trackCount).ceil - 1);
  			slotIndex = (posX.linlin(~piXmin, ~piXmax, 0, ~slotCountPi).ceil - 1);
 
-			// add offset and make sure indices dont go out of bounds
-			trackIndex = trackIndex.clip(0, ~trackCount-1);
-			slotIndex = slotIndex.clip(0, ~slotCountPi-1);
 
+			// add offset and make sure indices dont go out of bounds
+			trackIndex = trackIndex.clip(0, ~trackCount-1).asInt;
+			slotIndex = slotIndex.clip(0, ~slotCountPi-1).asInt;
+
+			trackIndex.asInt.postln;
+			slotIndex.postln;
+			classID.postln;
 			switch(trackIndex,
 				0, {~percBuffer[slotIndex] = classID},
 				1, {~harmoBuffer[slotIndex] = classID},
@@ -133,6 +141,7 @@ s.waitForBoot({
 
 		});
 
+//		~percBuffer.postln;
 
 	}, '/tuio/2Dobj', recvPort:12345);
 
@@ -143,7 +152,9 @@ s.waitForBoot({
 
 		var sessionID, classID, posX, posY;
 
-		msg.postln;
+		// "________________________________".postln;
+		// msg.postln;
+
 
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
@@ -161,6 +172,13 @@ s.waitForBoot({
 				~percBuffer[i + ~slotCountPi] = -1
 
 			});
+
+
+			// DEBUG
+			"---------------------- harmo lead seq, after laptop alive".postln;
+			~harmoSeq.postln;
+			~leadSeq.postln;
+			~percSeq.postln;
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
@@ -179,8 +197,8 @@ s.waitForBoot({
 			slotIndex = (posX.linlin(~laptopXmin, ~laptopXmax, 0, ~slotCountLaptop).ceil - 1);
 
 			// add offset and make sure indices dont go out of bounds
-			trackIndex = trackIndex.clip(0, ~trackCount-1);
-			slotIndex = (slotIndex + ~slotCountPi).clip(0, ~slotCount-1);
+			trackIndex = trackIndex.clip(0, ~trackCount-1).asInt;
+			slotIndex = (slotIndex + ~slotCountPi).clip(0, ~slotCount-1).asInt;
 
 			switch(trackIndex,
 				0, {~percBuffer[slotIndex] = classID},
@@ -188,6 +206,9 @@ s.waitForBoot({
 				2, {~leadBuffer[slotIndex] = classID});
 
 		});
+
+
+
 	}, '/tuio/2Dobj');
 
 
