@@ -37,8 +37,8 @@ s.waitForBoot({
 	~percSeq = (-1!~slotCount);
 
 	// test seq
-	~harmoSeq = [0,0,1,2,3,3];
-	~leadSeq = [-1,5,5,6,7,7];
+	~harmoSeq = [7,9,1,2,3,3];
+	~leadSeq = [-1,1,5,6,7,7];
 	~percSeq = [-1,9,10,11,8,-1];
 
 
@@ -234,13 +234,32 @@ s.waitForBoot({
 	~percPrev = 0;
 
 	~playStep = {|step|
+		var harmoPdef, leadPdef, percPdef;
+
+
 		postf("--- Step %\n", step);
 		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+		~leadSeq.postln;
+		~percSeq.postln;
+
+
+		harmoPdef = ~harmoPatterns.findKeyForValue(~harmoSeq[step]);
+		leadPdef = ~leadPatterns.findKeyForValue(~leadSeq[step]);
+		percPdef = ~percPatterns.findKeyForValue(~percSeq[step]);
+
+		if (harmoPdef != nil, {
+			Pdef(harmoPdef).play(quant:0);}
+		);
 		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+
+		if (leadPdef != nil, {
+			Pdef(leadPdef).play(quant:0);}
+		);
 		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+
+		if (percPdef != nil, {
+			Pdef(percPdef).play(quant:0);}
+		);
 		~percPrev = ~percSeq[step];
 
 		~beatPerSlot.wait;
