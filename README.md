@@ -10,6 +10,12 @@ Control a short music sequence with a toy train acting as the playbar, and lands
 
 # Setup @LaPetiteFabrique
 
+## Master
+- Lenovo T431s
+- windows7
+- in reactivision settings: invert x axis (saved in reactivion.xml)
+
+
 ## Slave
 - RaspberryPi 3B+
 - fisheye pi camera
@@ -21,13 +27,9 @@ Control a short music sequence with a toy train acting as the playbar, and lands
 - OS: raspbian
 - python3
 
-with an internet connection, run: 
+with an internet connection, run:
 ```
 sudo pip3 install python-osc
 ```
 
 ### execution
-
-
-
-
