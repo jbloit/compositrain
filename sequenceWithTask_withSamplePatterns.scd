@@ -7,6 +7,9 @@ The sequence is controlled with OSC messages from the reacTiVision software, acc
 Execute this from a cmd window, with
 sclang <pathToThisScript.scd>
 
+
+NB: the terms "slot" and "step" mean the same thing in the code, ie a pattern's position index in time.
+
 */
 
 s.waitForBoot({
@@ -35,8 +38,8 @@ s.waitForBoot({
 
 	// test seq
 	~harmoSeq = [0,0,1,2,3,3];
-	~leadSeq = [4,5,5,6,7,7];
-	~percSeq = [8,9,10,11,8,-1];
+	~leadSeq = [-1,5,5,6,7,7];
+	~percSeq = [-1,9,10,11,8,-1];
 
 
 	// since the two cameras' fields might overlap, we define each camera's allocated region
@@ -230,111 +233,43 @@ s.waitForBoot({
 	~leadPrev = 0;
 	~percPrev = 0;
 
+	~playStep = {|step|
+		postf("--- Step %\n", step);
+		~harmoSeq.postln;
+		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
+		~harmoPrev = ~harmoSeq[step];
+		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
+		~leadPrev = ~leadSeq[step];
+		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
+		~percPrev = ~percSeq[step];
+
+		~beatPerSlot.wait;
+
+		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
+		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
+		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
+	};
+
+
 	t = Task({
 
 		var step = 0;
+		~playStep.value(step);
 
-		///////
-		"step 1".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
-
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
-
-		///////
 		step = 1;
-		"step 2".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
+		~playStep.value(step);
 
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
-
-		///////
 		step = 2;
-		"step 3".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
+		~playStep.value(step);
 
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
-
-		///////
 		step = 3;
-		"step 4".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
+		~playStep.value(step);
 
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
-
-
-		///////
 		step = 4;
-		"step 5".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
+		~playStep.value(step);
 
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
-
-		///////
 		step = 5;
-		"step 6".postln;
-		~harmoSeq.postln;
-		Pdef(~harmoPatterns.findKeyForValue(~harmoSeq[step])).play(quant:0);
-		~harmoPrev = ~harmoSeq[step];
-		Pdef(~leadPatterns.findKeyForValue(~leadSeq[step])).play(quant:0);
-		~leadPrev = ~leadSeq[step];
-		Pdef(~percPatterns.findKeyForValue(~percSeq[step])).play(quant:0);
-		~percPrev = ~percSeq[step];
-
-		~beatPerSlot.wait;
-
-		Pdef((~harmoPatterns.findKeyForValue(~harmoPrev)).asSymbol).stop;
-		Pdef((~leadPatterns.findKeyForValue(~leadPrev)).asSymbol).stop;
-		Pdef((~percPatterns.findKeyForValue(~percPrev)).asSymbol).stop;
+		~playStep.value(step);
 
 	});
 });
