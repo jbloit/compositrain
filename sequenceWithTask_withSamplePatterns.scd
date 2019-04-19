@@ -16,21 +16,41 @@ s.waitForBoot({
 	~slotCountLaptop = 4;
 	~slotCount = ~slotCountPi + ~slotCountLaptop;
 
+	~trackCount = 3; // this is a constant
+
 	// The sequences to build. "-1" means no fiducial at the slot.
 	//~harmoSeq = (-1!~slotCount);
 
-	// test seq
+	// Part sequences, and their buffers (
+	// the buffers hold values during alive cycles of OSC data,
+	// the sequences hold values at the end of alive cycles, and are passed to the sequencer.
+	~harmoBuffer = (-1!~slotCount);
 	~harmoSeq = (-1!~slotCount);
-	~harmoPi = [0,1];
-	~harmoLaptop = [0,1,2,3];
 
+	~leadBuffer = (-1!~slotCount);
 	~leadSeq = (-1!~slotCount);
-	~leadSeqPi = [4,5];
-	~leadSeqLaptop = [4,5,6,7];
 
+	~percBuffer = (-1!~slotCount);
 	~percSeq = (-1!~slotCount);
-	~percSeqPi = [8,9];
-	~percSeqLaptop = [8,9,10,11];
+
+	// test seq
+	~harmoSeq = [0,0,1,2,3,3];
+	~leadSeq = [4,5,5,6,7,7];
+	~percSeq = [8,9,10,11,8,-1];
+
+
+	// since the two cameras' fields might overlap, we define each camera's allocated region
+	// dimension ranges for the two different cameras
+	// this needs to be calibrated manually
+	~piXmin = 0.3;
+	~piXmax = 0.7;
+	~piYmin = 0.1;
+	~piYmax = 0.9;
+
+	~laptopXmin = 0.2;
+	~laptopXmax = 0.9;
+	~laptopYmin = 0.1;
+	~laptopYmax = 0.9;
 
 	// map patterns to fiducial indices
 	// caution: use each key only once per dict
@@ -58,8 +78,6 @@ s.waitForBoot({
 		\perc_4, 11,
 	]);
 
-	// a local version of the sequence
-	~tmpSeq = (-1!~slotCount);
 
 	// OSC data from rpi camera
 	OSCdef(\rpiVision).free;
@@ -68,33 +86,54 @@ s.waitForBoot({
 		//		msg.postln;
 
 		var sessionID, classID, posX, posY;
-		var trackIndex; // 0, 1, 2
 
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
 
 		if (msg[1].asString == "alive", {
-			~harmoSeq = ~tmpSeq;
-			// ~harmoSeq.postln;
-			~tmpSeq = (-1!~slotCount);
+			~slotCountPi.do({|i|
+				// write data to the sequencer
+				~harmoSeq[i] = ~harmoBuffer[i];
+				~leadSeq[i] = ~leadBuffer[i];
+				~percSeq[i] = ~percBuffer[i];
+
+				// and reinit buffers (so that it plays silence in case no brick is set on the next cycle)
+				~harmoBuffer[i] = -1;
+				~leadBuffer[i] = -1;
+				~percBuffer[i] = -1
+			});
+
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
-		// we build the sequence
+		// we build the sequence and store it as it comes into buffers
 		if (msg[1].asString == "set", {
-			var index;
-			classID = msg[3];
+			// 3 tracks stack along the Y axis
+			// ~slotCountPi slots stack along the X axis
+			var trackIndex, slotIndex;
+
+			classID = msg[3]; // this is the detected fiducial index
 			posX = msg[4];
 			posY = msg[5];
 
-			index =(posX.linlin(0, 1, 0, ~slotCount).ceil - 1);
-			~tmpSeq[index] = classID;
+			trackIndex = (posY.linlin(~piYmin, ~piYmax, 0, ~trackCount).ceil - 1);
+ 			slotIndex = (posX.linlin(~piXmin, ~piXmax, 0, ~slotCountPi).ceil - 1);
+
+			// add offset and make sure indices dont go out of bounds
+			trackIndex = trackIndex.clip(0, ~trackCount-1);
+			slotIndex = slotIndex.clip(0, ~slotCountPi-1);
+
+			switch(trackIndex,
+				0, {~percBuffer[slotIndex] = classID},
+				1, {~harmoBuffer[slotIndex] = classID},
+				2, {~leadBuffer[slotIndex] = classID});
+
 		});
 
 
 	}, '/tuio/2Dobj', recvPort:12345);
 
-	// Parse OSC from reactivision, and update the sequence to play.
+	// Parse OSC from reactivision on laptop, and update the sequence to play.
 	OSCdef(\vision).free;
 	OSCdef(\vision, {
 		| msg, time, addr, port |
@@ -106,21 +145,45 @@ s.waitForBoot({
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
 		if (msg[1].asString == "alive", {
-			~harmoSeq = ~tmpSeq;
-			// ~harmoSeq.postln;
-			~tmpSeq= (-1!~slotCount);
+
+			~slotCountLaptop.do({|i|
+				// write data to the sequencer
+				~harmoSeq[i + ~slotCountPi] = ~harmoBuffer[i + ~slotCountPi];
+				~leadSeq[i + ~slotCountPi] = ~leadBuffer[i + ~slotCountPi];
+				~percSeq[i + ~slotCountPi] = ~percBuffer[i + ~slotCountPi];
+
+				// and reinit buffers (so that it plays silence in case no brick is set on the next cycle)
+				~harmoBuffer[i + ~slotCountPi] = -1;
+				~leadBuffer[i + ~slotCountPi] = -1;
+				~percBuffer[i + ~slotCountPi] = -1
+
+			});
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
 		// we build the sequence
 		if (msg[1].asString == "set", {
-			var index;
-			classID = msg[3];
+
+			// 3 tracks stack along the Y axis
+			// ~slotCountPi slots stack along the X axis
+			var trackIndex, slotIndex;
+
+			classID = msg[3]; // this is the detected fiducial index
 			posX = msg[4];
 			posY = msg[5];
 
-			index =(posX.linlin(0, 1, 0, ~slotCount).ceil - 1);
-			~tmpSeq[index] = classID;
+			trackIndex = (posY.linlin(~laptopYmin, ~laptopYmax, 0, ~trackCount).ceil - 1);
+			slotIndex = (posX.linlin(~laptopXmin, ~laptopXmax, 0, ~slotCountLaptop).ceil - 1);
+
+			// add offset and make sure indices dont go out of bounds
+			trackIndex = trackIndex.clip(0, ~trackCount-1);
+			slotIndex = (slotIndex + ~slotCountPi).clip(0, ~slotCount-1);
+
+			switch(trackIndex,
+				0, {~percBuffer[slotIndex] = classID},
+				1, {~harmoBuffer[slotIndex] = classID},
+				2, {~leadBuffer[slotIndex] = classID});
+
 		});
 	}, '/tuio/2Dobj');
 
