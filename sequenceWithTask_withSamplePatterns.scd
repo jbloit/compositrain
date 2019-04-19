@@ -50,10 +50,10 @@ s.waitForBoot({
 	~piYmin = 0.1;
 	~piYmax = 0.9;
 
-	~laptopXmin = 0.2;
-	~laptopXmax = 0.9;
-	~laptopYmin = 0.1;
-	~laptopYmax = 0.9;
+	~laptopXmin = 0.0;
+	~laptopXmax = 1.0;
+	~laptopYmin = 0.0;
+	~laptopYmax = 1.0;
 
 	// map patterns to fiducial indices
 	// caution: use each key only once per dict
@@ -65,21 +65,23 @@ s.waitForBoot({
 		\harmo_4, 3,
 	]);
 
-	~leadPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\lead_1, 4,
-		\lead_2, 5,
-		\lead_3, 6,
-		\lead_4, 7,
-	]);
-
 	~percPatterns= Dictionary.newFrom(List[
 		\silent, -1,
-		\perc_1, 8,
-		\perc_2, 9,
-		\perc_3, 10,
-		\perc_4, 11,
+		\perc_1, 4,
+		\perc_2, 5,
+		\perc_3, 6,
+		\perc_4, 7,
 	]);
+
+	~leadPatterns= Dictionary.newFrom(List[
+		\silent, -1,
+		\lead_1, 8,
+		\lead_2, 9,
+		\lead_3, 10,
+		\lead_4, 11,
+	]);
+
+
 
 
 	// OSC data from rpi camera
@@ -175,10 +177,10 @@ s.waitForBoot({
 
 
 			// DEBUG
-			"---------------------- harmo lead seq, after laptop alive".postln;
+/*			"---------------------- harmo lead seq, after laptop alive".postln;
 			~harmoSeq.postln;
 			~leadSeq.postln;
-			~percSeq.postln;
+			~percSeq.postln;*/
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
@@ -257,10 +259,10 @@ s.waitForBoot({
 	~playStep = {|step|
 		var harmoPdef, leadPdef, percPdef;
 
-
+		"===============================================".postln;
 		postf("--- Step %\n", step);
-		~harmoSeq.postln;
 		~leadSeq.postln;
+		~harmoSeq.postln;
 		~percSeq.postln;
 
 
