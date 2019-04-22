@@ -26,32 +26,6 @@ s.waitForBoot({
 	~laptopYmin = 0.0;
 	~laptopYmax = 1.0;
 
-	// map patterns to fiducial indices
-	// caution: use each key only once per dict
-	~harmoPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\harmo_1, 0,
-		\harmo_2, 1,
-		\harmo_3, 2,
-		\harmo_4, 3,
-	]);
-
-	~percPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\perc_1, 4,
-		\perc_2, 5,
-		\perc_3, 6,
-		\perc_4, 7,
-	]);
-
-	~leadPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\lead_1, 8,
-		\lead_2, 9,
-		\lead_3, 10,
-		\lead_4, 11,
-	]);
-
 	// Parse OSC from reactivision on laptop, and update the sequence to play.
 	OSCdef(\vision).free;
 	OSCdef(\vision, {
