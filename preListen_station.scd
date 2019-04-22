@@ -16,6 +16,7 @@ s.waitForBoot({
 
 	~currentPattern = nil;
 	~prevPattern = nil;
+	~slotCount = 6;
 
 	// since the two cameras' fields might overlap, we define each camera's allocated region
 	// dimension ranges for the two different cameras

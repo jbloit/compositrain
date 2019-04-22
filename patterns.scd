@@ -10,18 +10,18 @@
 
 ~leadPatterns= Dictionary.newFrom(List[
 	\silent, -1,
-	\lead_1, 1,
-	\lead_2, 3,
+	\lead_1, 4,
 	\lead_3, 5,
-	\lead_4, 6,
+	\lead_5, 6,
+	\lead_6, 7,
 ]);
 
 ~percPatterns= Dictionary.newFrom(List[
 	\silent, -1,
-	\perc_1, 1,
-	\perc_2, 2,
-	\perc_3, 7,
-	\perc_4, 8,
+	\perc_1, 8,
+	\perc_2, 9,
+	\perc_7, 10,
+	\perc_8, 11,
 ]);
 
 
