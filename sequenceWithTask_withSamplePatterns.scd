@@ -37,9 +37,9 @@ s.waitForBoot({
 	~percSeq = (-1!~slotCount);
 
 	// test seq
-	// ~harmoSeq = [0,1,1,2,3,3];
-	// ~leadSeq = [-1,4,5,6,7,7];
-	// ~percSeq = [-1,9,10,11,8,-1];
+	~harmoSeq = [7,9,1,2,3,3];
+	~leadSeq = [-1,1,5,6,7,7];
+	~percSeq = [-1,9,10,11,8,-1];
 
 
 	// since the two cameras' fields might overlap, we define each camera's allocated region
@@ -50,46 +50,20 @@ s.waitForBoot({
 	~piYmin = 0.1;
 	~piYmax = 0.9;
 
-	~laptopXmin = 0.0;
-	~laptopXmax = 1.0;
-	~laptopYmin = 0.0;
-	~laptopYmax = 1.0;
+	~laptopXmin = 0.2;
+	~laptopXmax = 0.9;
+	~laptopYmin = 0.1;
+	~laptopYmax = 0.9;
 
-	// map patterns to fiducial indices
-	// caution: use each key only once per dict
-	~harmoPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\harmo_1, 0,
-		\harmo_2, 1,
-		\harmo_3, 2,
-		\harmo_4, 3,
-	]);
 
-	~percPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\perc_1, 4,
-		\perc_2, 5,
-		\perc_3, 6,
-		\perc_4, 7,
-	]);
-
-	~leadPatterns= Dictionary.newFrom(List[
-		\silent, -1,
-		\lead_1, 8,
-		\lead_2, 9,
-		\lead_3, 10,
-		\lead_4, 11,
-	]);
 
 	// OSC data from rpi camera
 	OSCdef(\rpiVision).free;
 	OSCdef(\rpiVision, {|msg, time, addr, port|
+		//	"________________________________".postln;
+		//		msg.postln;
 
 		var sessionID, classID, posX, posY;
-
-		/*		"________________________________".postln;
-		msg.postln;*/
-
 
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
@@ -107,15 +81,6 @@ s.waitForBoot({
 				~percBuffer[i] = -1
 			});
 
-
-/*			//DEBUG
-			postf("----------------------------- RPI ALIVE - UPDATED SEQ  %\n");
-			~leadSeq.postln;
-			~harmoSeq.postln;
-			~percSeq.postln;*/
-
-
-
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
@@ -125,33 +90,24 @@ s.waitForBoot({
 			// ~slotCountPi slots stack along the X axis
 			var trackIndex, slotIndex;
 
-			// "--- Set rpi".postln;
-
 			classID = msg[3]; // this is the detected fiducial index
 			posX = msg[4];
 			posY = msg[5];
 
 			trackIndex = (posY.linlin(~piYmin, ~piYmax, 0, ~trackCount).ceil - 1);
-			slotIndex = (posX.linlin(~piXmin, ~piXmax, 0, ~slotCountPi).ceil - 1);
+ 			slotIndex = (posX.linlin(~piXmin, ~piXmax, 0, ~slotCountPi).ceil - 1);
 
 			// add offset and make sure indices dont go out of bounds
-			trackIndex = trackIndex.clip(0, ~trackCount-1).asInt;
-			slotIndex = slotIndex.clip(0, ~slotCountPi-1).asInt;
+			trackIndex = trackIndex.clip(0, ~trackCount-1);
+			slotIndex = slotIndex.clip(0, ~slotCountPi-1);
 
 			switch(trackIndex,
 				0, {~percBuffer[slotIndex] = classID},
 				1, {~harmoBuffer[slotIndex] = classID},
 				2, {~leadBuffer[slotIndex] = classID});
 
-			//DEBUG
-/*			postf("--- RPI SET - UPDATED BUFFER  %\n");
-			~leadBuffer.postln;
-			~harmoBuffer.postln;
-			~percBuffer.postln;*/
-
 		});
 
-		//		~percBuffer.postln;
 
 	}, '/tuio/2Dobj', recvPort:12345);
 
@@ -162,9 +118,7 @@ s.waitForBoot({
 
 		var sessionID, classID, posX, posY;
 
-		// "________________________________".postln;
-		// msg.postln;
-
+		msg.postln;
 
 		// The alive message is sent periodically. We reset the sequence and
 		// make the previous one available to the sequencer.
@@ -182,13 +136,6 @@ s.waitForBoot({
 				~percBuffer[i + ~slotCountPi] = -1
 
 			});
-
-
-/*			//DEBUG
-			postf("------------------------ LAPTOP ALIVE - UPDATED SEQ  %\n");
-			~leadSeq.postln;
-			~harmoSeq.postln;
-			~percSeq.postln;*/
 		});
 
 		// all "set" messages are received in between successive "alive" messages.
@@ -207,30 +154,20 @@ s.waitForBoot({
 			slotIndex = (posX.linlin(~laptopXmin, ~laptopXmax, 0, ~slotCountLaptop).ceil - 1);
 
 			// add offset and make sure indices dont go out of bounds
-			trackIndex = trackIndex.clip(0, ~trackCount-1).asInt;
-			slotIndex = (slotIndex + ~slotCountPi).clip(0, ~slotCount-1).asInt;
+			trackIndex = trackIndex.clip(0, ~trackCount-1);
+			slotIndex = (slotIndex + ~slotCountPi).clip(0, ~slotCount-1);
 
 			switch(trackIndex,
 				0, {~percBuffer[slotIndex] = classID},
 				1, {~harmoBuffer[slotIndex] = classID},
 				2, {~leadBuffer[slotIndex] = classID});
 
-			/*
-			//DEBUG
-			postf("--- LAPTOP SET - UPDATED BUFFER for track % slot % index %\n", trackIndex, slotIndex, classID);
-			~leadBuffer.postln;
-			~harmoBuffer.postln;
-			~percBuffer.postln;
-			*/
 		});
+	}, '/tuio/2Dobj');
 
 
 
-	}, '/tuio/2Dobj',  recvPort:54321);
-
-
-
-	// OSC data from rpi hall sensor, to start playing the sequence
+	// OSC data from rpi hall sensor
 	OSCdef(\rpiSensor).free;
 	OSCdef(\rpiSensor, {|msg, time, addr, port|
 
@@ -274,10 +211,10 @@ s.waitForBoot({
 	~playStep = {|step|
 		var harmoPdef, leadPdef, percPdef;
 
-		"===============================================".postln;
+
 		postf("--- Step %\n", step);
-		~leadSeq.postln;
 		~harmoSeq.postln;
+		~leadSeq.postln;
 		~percSeq.postln;
 
 
@@ -327,13 +264,6 @@ s.waitForBoot({
 
 		step = 5;
 		~playStep.value(step);
-
-
-		//reinit sequencer
-		~harmoSeq = (-1!~slotCount);
-		~leadSeq = (-1!~slotCount);
-		~percSeq = (-1!~slotCount);
-
 
 	});
 });

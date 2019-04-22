@@ -1,3 +1,32 @@
+// map patterns to fiducial indices
+// caution: use each key only once per dict
+~harmoPatterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\harmo_1, 0,
+	\harmo_2, 1,
+	\harmo_3, 2,
+	\harmo_4, 3,
+]);
+
+~leadPatterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\lead_1, 1,
+	\lead_2, 3,
+	\lead_3, 5,
+	\lead_4, 6,
+]);
+
+~percPatterns= Dictionary.newFrom(List[
+	\silent, -1,
+	\perc_1, 1,
+	\perc_2, 2,
+	\perc_3, 7,
+	\perc_4, 8,
+]);
+
+
+
+
 Pdef(\silent,
 	Pbind(
 		\dur, Pseq([1],1),
