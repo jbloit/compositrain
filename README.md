@@ -8,7 +8,7 @@ Control a short music sequence with a toy train acting as the playbar, and lands
 - Slave: RaspberryPi for reactivion and half the track, and sensor aquisition.
 
 
-# Setup @LaPetiteFabrique
+# Setup for the exhibition
 
 ## Master
 - Lenovo T431s
